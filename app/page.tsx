@@ -33,12 +33,15 @@ function Card({ title, index, tasks }: { title: string;  index: number; tasks: T
       setNewTaskText("");
     }
   };
+  
 
   return (
     <div>
       <div className="bg-gray-200 h-auto min-h-[250px] w-[220px] mt-[50px] ml-[20px] rounded-2xl p-4">
         <div className="flex justify-between">
+
           <h3 className="pl-[29px]">{title}</h3>
+          
           <div className="relative">
             <img src="./dots.png" alt="not" height="10" width="25" onClick={() => setShowOptions(!showOptions)} />
             {showOptions && (
@@ -114,6 +117,18 @@ export default function Home() {
       return card;
     }));
   };
+
+  const manageTitle = (index: number, title: string) => {
+    setCards(cards.map((card, i) => {
+      if (i === index) {
+        return {
+          ...card,
+          title
+        };
+      }
+      return card;
+    }));
+  }
 
   const contextValue = {
     cards,

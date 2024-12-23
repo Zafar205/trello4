@@ -1,16 +1,13 @@
 "use client"
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 
 
-interface CardProps {
-    title: string;
-    description: string;
-}
 
-export default function Card({ title, description }: CardProps) {
+export default function Card({ title, description }: { title: string, description: string }) {
+
     const deleteCard = () => {
-        // Perform delete card logic here
     };
+
 
     const [showOptions, setShowOptions] = useState(false);
 
