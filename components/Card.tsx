@@ -1,11 +1,13 @@
 "use client"
 import { useState, useContext } from 'react';
 import { CardContext} from '../app/page';
-import { Pencil } from 'lucide-react';
+import TaskItem from './TaskItem';
+
 interface Task {
     text: string;
     id : string;
   }
+
 
 export default function Card({ title, index, tasks }: { title: string;  index: number; tasks: Task[] }) {
     const context = useContext(CardContext);
@@ -51,7 +53,7 @@ export default function Card({ title, index, tasks }: { title: string;  index: n
               value={titleText}
               onChange={(e) => setTitleText(e.target.value)}
               onBlur={handleTitleSubmit}
-              onKeyPress={handleTitleKeyPress}
+              onKeyDown={handleTitleKeyPress}
               className="pl-[29px] bg-white rounded-lg text-sm w-32"
               autoFocus
             />
@@ -66,7 +68,9 @@ export default function Card({ title, index, tasks }: { title: string;  index: n
           
           <div className="relative">
             <img src="./dots.png" alt="not" height="10" width="25" onClick={() => setShowOptions(!showOptions)} />
-            {showOptions && (
+            {
+            showOptions && 
+            (
               <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-300 rounded-md shadow-lg">
                 <button
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 ml-[40px]"
@@ -88,7 +92,7 @@ export default function Card({ title, index, tasks }: { title: string;  index: n
                 key={task.id}
                 task={task}
                 cardIndex={index}
-                onUpdate={(newText) => handleUpdateTask(task.id, newText)}
+
               />
             ))}
           </ul>
@@ -114,46 +118,3 @@ export default function Card({ title, index, tasks }: { title: string;  index: n
 }
 
 
-function TaskItem({ task, cardIndex, onUpdate }: { task: Task; cardIndex: number; onUpdate: (text: string) => void }) {
-    const [isEditing, setIsEditing] = useState(false);
-    const [editText, setEditText] = useState(task.text);
-  
-    const handleSubmit = () => {
-      if (editText.trim()) {
-        onUpdate(editText);
-        setIsEditing(false);
-      }
-    };
-  
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        handleSubmit();
-      }
-    };
-  
-    return (
-      <li className="bg-white p-2 rounded-lg text-sm flex justify-between items-center group">
-        {isEditing ? (
-          <input
-            type="text"
-            value={editText}
-            onChange={(e) => setEditText(e.target.value)}
-            onBlur={handleSubmit}
-            onKeyDown={handleKeyPress}
-            className="flex-1 px-2 py-1 rounded-lg text-sm"
-            autoFocus
-          />
-        ) : (
-          <>
-            <span>{task.text}</span>
-            <button
-              onClick={() => setIsEditing(true)}
-              className="opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <Pencil size={14} className="text-gray-500 hover:text-blue-500" />
-            </button>
-          </>
-        )}
-      </li>
-    );
-  }
