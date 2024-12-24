@@ -15,12 +15,9 @@ interface Subtask {
   completed: boolean;
 }
 
-interface TaskItemProps {
-  task: Task;
-  cardIndex: number;
-}
 
-export default function TaskItem({ task, cardIndex }: TaskItemProps) {
+
+export default function TaskItem({ task, cardIndex }: {task : Task, cardIndex: number}) {
   const context = useContext(CardContext);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(task.text);
