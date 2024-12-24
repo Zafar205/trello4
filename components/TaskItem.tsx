@@ -1,7 +1,9 @@
-import { Pencil, Trash2 } from 'lucide-react';
+"use client"
+import { Pencil, Trash2, GripVertical } from 'lucide-react';
 import { useContext, useState } from 'react';
 import { CardContext } from '../app/page';
 import TaskModal from './TaskModal';
+import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 
 interface Task {
   text: string;
@@ -15,9 +17,7 @@ interface Subtask {
   completed: boolean;
 }
 
-
-
-export default function TaskItem({ task, cardIndex }: {task : Task, cardIndex: number}) {
+export default function TaskItem({ task, cardIndex }: { task: Task, cardIndex: number }) {
   const context = useContext(CardContext);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(task.text);
@@ -48,50 +48,61 @@ export default function TaskItem({ task, cardIndex }: {task : Task, cardIndex: n
   };
 
   return (
-    <>
-      <li className="bg-white p-2 rounded-lg text-sm flex justify-between items-center group cursor-pointer">
-        <div onClick={() => setIsModalOpen(true)} className="flex-1">
-          {isEditing ? (
-            <input
-              type="text"
-              value={editText}
-              onChange={(e) => setEditText(e.target.value)}
-              onBlur={handleSubmit}
-              onKeyDown={handleKeyPress}
-              className="flex-1 px-2 py-1 rounded-lg text-sm w-full"
-              autoFocus
-            />
-          ) : (
-            <span>{task.text}</span>
-          )}
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDeleteTask();
-            }}
-          >
-            <Trash2 size={14} className="text-red-500 hover:text-red-700" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsEditing(true);
-            }}
-          >
-            <Pencil size={14} className="text-gray-500 hover:text-blue-500" />
-          </button>
-        </div>
-      </li>
+    <Draggable draggableId={task.id} index={cardIndex}>
+      {(provided) => (
+        <li
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          className="bg-white p-2 rounded-lg text-sm flex justify-between items-center group cursor-pointer mb-2"
+        >
+          <div {...provided.dragHandleProps} className="mr-2">
+            <GripVertical size={14} className="text-gray-400" />
+          </div>
+          
+          <div onClick={() => setIsModalOpen(true)} className="flex-1">
+            {isEditing ? (
+              <input
+                type="text"
+                value={editText}
+                onChange={(e) => setEditText(e.target.value)}
+                onBlur={handleSubmit}
+                onKeyDown={handleKeyPress}
+                className="flex-1 px-2 py-1 rounded-lg text-sm w-full"
+                autoFocus
+              />
+            ) : (
+              <span>{task.text}</span>
+            )}
+          </div>
+          
+          <div className="flex gap-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteTask();
+              }}
+            >
+              <Trash2 size={14} className="text-red-500 hover:text-red-700" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsEditing(true);
+              }}
+            >
+              <Pencil size={14} className="text-gray-500 hover:text-blue-500" />
+            </button>
+          </div>
 
-      <TaskModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        task={task}
-        cardIndex={cardIndex}
-        onUpdateTask={handleUpdateTask}
-      />
-    </>
+          <TaskModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            task={task}
+            cardIndex={cardIndex}
+            onUpdateTask={handleUpdateTask}
+          />
+        </li>
+      )}
+    </Draggable>
   );
 }

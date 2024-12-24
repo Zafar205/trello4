@@ -2,9 +2,13 @@
 import { createContext, useContext, useState } from 'react';
 import "./globals.css";
 import Card from "../components/Card";
+import { DragDropContext, DropResult } from "react-beautiful-dnd";
+
+
+
 interface Task {
-  text: string;
   id : string;
+  text: string;
   subtasks: Subtask[];
 }
 
@@ -25,20 +29,45 @@ interface CardContextType {
   addCard: () => void;
   deleteCard: (index: number) => void;
   addTask: (cardIndex: number, taskText: string) => void;
+  updateTask: (cardIndex: number, taskId: string, newText: string, subtasks: Subtask[]) => void;
   deleteTask: (cardIndex: number, taskId: string) => void;
   updateTitle: (index: number, title: string) => void;
-  updateTask: (cardIndex: number, taskId: string, newText: string, subtasks: Subtask[]) => void;
 }
 
 export const CardContext = createContext<CardContextType | null>(null);
 
 
+
 export default function Home() {
   const [cards, setCards] = useState<Array<CardObject>>([]);
+  //card title input
   const [showTitleInput, setShowTitleInput] = useState(false);
   const [newCardTitle, setNewCardTitle] = useState("");
+  //global input
   const [globalTaskText, setGlobalTaskText] = useState("");
   const [selectedCardIndex, setSelectedCardIndex] = useState<number | null>(null);
+
+
+
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+  
+    const sourceId = result.source.droppableId;
+    const destId = result.destination.droppableId;
+    
+    const sourceCardIndex = parseInt(sourceId.split('-')[1]);
+    const destCardIndex = parseInt(destId.split('-')[1]);
+    
+    const sourceTaskIndex = result.source.index;
+    const destTaskIndex = result.destination.index;
+  
+    setCards(prevCards => {
+      const newCards = [...prevCards];
+      const [removed] = newCards[sourceCardIndex].tasks.splice(sourceTaskIndex, 1);
+      newCards[destCardIndex].tasks.splice(destTaskIndex, 0, removed);
+      return newCards;
+    });
+  };
 
   const addCard = () => {
     if (!showTitleInput) {
@@ -85,8 +114,7 @@ export default function Home() {
       if (i === cardIndex) {
         return {
           ...card,
-          tasks: card.tasks.map(task =>
-            task.id === taskId ? { ...task, text: newText, subtasks } : task
+          tasks: card.tasks.map(task => task.id === taskId ? { ...task, text: newText, subtasks } : task
           )
         };
       }
@@ -105,8 +133,7 @@ export default function Home() {
     setCards(cards.map((card, i) => {
       if (i === index) {
         return {
-          ...card,
-          title
+          ...card, title
         };
       }
       return card;
@@ -164,6 +191,8 @@ export default function Home() {
           }
         </select>
       </div>
+
+      <DragDropContext onDragEnd={onDragEnd}>
       <div className="flex flex-row flex-wrap">
 
         {cards.map((card, index) => (
@@ -200,6 +229,7 @@ export default function Home() {
           )}
         </div>
       </div>
+    </DragDropContext>
     </CardContext.Provider>
   );
 }
