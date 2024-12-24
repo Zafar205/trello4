@@ -2,6 +2,7 @@
 import { createContext, useContext, useState } from 'react';
 import "./globals.css";
 import Card from "../components/Card";
+import { DndContext, DragEndEvent, closestCorners } from "@dnd-kit/core";
 
 
 
@@ -32,6 +33,7 @@ interface CardContextType {
   updateTask: (cardIndex: number, taskId: string, newText: string, subtasks: Subtask[]) => void;
   deleteTask: (cardIndex: number, taskId: string) => void;
   updateTitle: (index: number, title: string) => void;
+  moveTask: (taskId: string, fromCardIndex: number, toCardIndex: number) => void;
 }
 
 export const CardContext = createContext<CardContextType | null>(null);
@@ -128,6 +130,35 @@ export default function Home() {
         }));
   }
 
+  const moveTask = (taskId: string, fromCardIndex: number, toCardIndex: number) => {
+    setCards(prevCards => {
+      const newCards = [...prevCards];
+      const task = newCards[fromCardIndex].tasks.find(t => t.id === taskId);
+      
+      if (task) {
+        // Remove from source
+        newCards[fromCardIndex].tasks = newCards[fromCardIndex].tasks.filter(t => t.id !== taskId);
+        // Add to destination
+        newCards[toCardIndex].tasks.push(task);
+      }
+      
+      return newCards;
+    });
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (!over || !active.data.current) return;
+    
+    const activeCardIndex = active.data.current.cardIndex;
+    const overCardId = over.id.toString();
+    const toCardIndex = parseInt(overCardId.replace('card-', ''));
+    
+    if (activeCardIndex !== toCardIndex) {
+      moveTask(active.id.toString(), activeCardIndex, toCardIndex);
+    }
+  };
   const contextValue = {
     cards,
     addCard,
@@ -135,11 +166,13 @@ export default function Home() {
     addTask,
     updateTitle,
     updateTask,
-    deleteTask
+    deleteTask,
+    moveTask
   };
 
   return (
     <CardContext.Provider value={contextValue}>
+      <DndContext collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
       <div className="flex flex-row m-[10px]">
         <input
           type="text"
@@ -204,6 +237,7 @@ export default function Home() {
           )}
         </div>
       </div>
+      </DndContext>
     </CardContext.Provider>
   );
 }
