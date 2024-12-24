@@ -4,8 +4,15 @@ import "./globals.css";
 import Card from "../components/Card";
 interface Task {
   text: string;
-  id: string;
+  id : string;
+  subtasks: Subtask[];
 }
+
+interface Subtask {
+  id: string;
+  text: string;
+  completed: boolean;
+} 
 
 interface CardObject {
   index: number;
@@ -20,7 +27,7 @@ interface CardContextType {
   addTask: (cardIndex: number, taskText: string) => void;
   deleteTask: (cardIndex: number, taskId: string) => void;
   updateTitle: (index: number, title: string) => void;
-  updateTask: (cardIndex: number, taskId: string, newText: string) => void;
+  updateTask: (cardIndex: number, taskId: string, newText: string, subtasks: Subtask[]) => void;
 }
 
 export const CardContext = createContext<CardContextType | null>(null);
@@ -66,20 +73,20 @@ export default function Home() {
       if (i === cardIndex) {
         return {
           ...card,
-          tasks: [...card.tasks, { text: taskText, id: Date.now().toString() }]
+          tasks: [...card.tasks, { text: taskText, id: Date.now().toString(), subtasks: [] }]
         };
       }
       return card;
     }));
   };
 
-  const updateTask = (cardIndex: number, taskId: string, newText: string) => {
+  const updateTask = (cardIndex: number, taskId: string, newText: string, subtasks: Subtask[]) => {
     setCards(cards.map((card, i) => {
       if (i === cardIndex) {
         return {
           ...card,
           tasks: card.tasks.map(task =>
-            task.id === taskId ? { ...task, text: newText } : task
+            task.id === taskId ? { ...task, text: newText, subtasks } : task
           )
         };
       }
@@ -129,7 +136,7 @@ export default function Home() {
 
   return (
     <CardContext.Provider value={contextValue}>
-      <div className="flex flex-row m-[20px]">
+      <div className="flex flex-row m-[10px]">
         <input
           type="text"
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-2xl focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
